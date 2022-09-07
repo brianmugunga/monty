@@ -1,47 +1,55 @@
+
 #include "monty.h"
-global_t header;
-/**
- * start_stack - declare and initialize header
- * @stack: Addres of stack
- */
-void start_stack(stack_t **stack)
-{
-	*stack = NULL;
-	header.first = stack;
-}
-/**
- * free_all - Free all asign malloc func
- */
-void free_all(void)
-{
-	stack_t *tmp1, *tmp2 = NULL;
 
-	tmp1 = *(header.first);
-	while (tmp1 != NULL)
+int num = 0;
+int data_format = 0;
+int exit_check = 0;
+
+/**
+ * main - interpreter for Monty ByteCodes files
+ * @argc: arguments count
+ * @argv: arguments passed in the command line
+ * Return: TBD
+ */
+
+int main(int argc, char **argv)
+{
+	char *buf = NULL, *file = NULL, *token = NULL, *array[2];
+	size_t bufsize = 0, line_number = 1;
+	FILE *fp = NULL;
+	void (*ptr)();
+	stack_t *head = NULL;
+
+	if (argc != 2)
+		dprintf(2, "USAGE: monty file\n"), exit(EXIT_FAILURE);
+	file = argv[1];
+	fp = fopen(file, "r");
+	if (fp == NULL)
+		dprintf(2, "Error: Can't open file %s\n", argv[1]), exit(EXIT_FAILURE);
+	while (getline(&buf, &bufsize, fp) != -1)
 	{
-		tmp2 = tmp1->next;
-		free(tmp1);
-		tmp1 = tmp2;
+		token = strtok(buf, " \t\n");
+		array[0] = token;
+		if (!iscomment(array[0]))
+		{
+			line_number++;
+			continue;
+		}
+		if (strcmp("push", array[0]) == 0)
+		{
+			token = strtok(NULL, " \t\n");
+			array[1] = token;
+			num = isnumber(array[1], line_number);
+			exit_failure_check(buf, fp, head);
+		}
+		ptr = get_opcode_func(array[0]);
+		if (ptr != NULL)
+			(*ptr)(&head, line_number);
+		else
+			dprintf(2, "L%i: unknown instruction %s\n", (int)line_number, array[0]);
+		exit_failure_check(buf, fp, head);
+		line_number++;
 	}
-	free(header.buffer);
-	fclose(header.file);
-}
-
-/**
- * main - num of arguments
- * @argc: number of arguments
- * @argv: arguments
- * Return: EXIT_FAILURE on Fail, EXIT_SUCCES on Succes
- */
-int main(int argc, char *argv[])
-{
-	stack_t *stack;
-
-	start_stack(&stack);
-	if (argc == 2)
-	{
-		find_file(argv[1], &stack);
-	}
-	fprintf(stderr, "USAGE: monty file\n");
-	exit(EXIT_FAILURE);
+	free(buf), fclose(fp), free_stackt(head);
+	return (0);
 }
