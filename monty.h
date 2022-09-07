@@ -1,9 +1,13 @@
-#ifndef MONTY
-#define MONTY
-
+#ifndef MONTY_H
+#define MONTY_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
+extern int num;
+extern int data_format;
+extern int exit_check;
 
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
@@ -35,43 +39,28 @@ typedef struct instruction_s
 	void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-/**
- * struct var_global - structure with the first addres of elements
- * @first: Pointer to stack
- * @buffer: The buffer
- * @file: The file descriptor of fopen.
- */
-typedef struct var_global
-{
-	stack_t **first;
-	char *buffer;
-	FILE *file;
-} global_t;
-extern global_t header;
-
-/* Main functions */
-void start_stack(stack_t **stack);
-void function_select(stack_t **stack, unsigned int line_number, char *command);
-void find_file(char *path, stack_t **stack);
-int manage_error(char *value, unsigned int line_number);
-
-/* Command functions */
-void push(stack_t **stack, unsigned int line_number);
-void pall(stack_t **stack, unsigned int line_number);
-void pint(stack_t **stack, unsigned int line_number);
-void pop(stack_t **stack, unsigned int line_number);
-void sub(stack_t **stack, unsigned int line_number);
-void _div(stack_t **stack, unsigned int line_number);
-void _mul(stack_t **stack, unsigned int line_number);
-void _mod(stack_t **stack, unsigned int line_number);
-void pchar(stack_t **stack, unsigned int line_number);
-void nop(stack_t **stack, unsigned int line_number);
-void swap(stack_t **stack, unsigned int line_number);
-void add(stack_t **stack, unsigned int line_number);
-void _rotl(stack_t **stack, unsigned int line_number);
-void _rotr(stack_t **stack, unsigned int line_number);
-void pstr(stack_t **stack, unsigned int line_number);
-
-void free_all(void);
+void free_stackt(stack_t *head);
+void (*get_opcode_func(char *s))(stack_t **stack, unsigned int line_number);
+int isnumber(char *str, unsigned int line_number);
+int iscomment(char *str);
+void exit_failure_check(char *buf, FILE *fp, stack_t *head);
+void push_(stack_t **head, unsigned int line_number);
+void pall_(stack_t **head, unsigned int line_number);
+void pint_(stack_t **head, unsigned int line_number);
+void pop_(stack_t **head, unsigned int line_number);
+void swap_(stack_t **head, unsigned int line_number);
+void add_(stack_t **head, unsigned int line_number);
+void sub_(stack_t **head, unsigned int line_number);
+void nop_(stack_t **head, unsigned int line_number);
+void sub_(stack_t **head, unsigned int line_number);
+void div_(stack_t **head, unsigned int line_number);
+void mul_(stack_t **head, unsigned int line_number);
+void mod_(stack_t **head, unsigned int line_number);
+void pchar_(stack_t **head, unsigned int line_number);
+void pstr_(stack_t **head, unsigned int line_number);
+void rotl_(stack_t **head, unsigned int line_number);
+void rotr_(stack_t **head, unsigned int line_number);
+void stack_(stack_t **head, unsigned int line_number);
+void queue_(stack_t **head, unsigned int line_number);
 
 #endif
