@@ -1,67 +1,49 @@
 #include "monty.h"
-
-cmds *head = NULL;
+global_t global_var = {NULL, NULL, NULL, 1};
 
 /**
- * check_blank - checks for blank spaces
- * @s: source string
- * Return: 0 if successful, 1 otherwise
- */
-int check_blank(char *s)
+ * main - Monty byte code interpreter
+ * @ac: argument count
+ * @av: argument arr
+ * Return: 0 on success, 1 on Error
+ **/
+int main(int ac, char *av[])
 {
-	size_t i = 0;
+	size_t state_buffer;
+	int flag_EOF = 1;
+	int count_words = 0;
+	stack_t *head = NULL;
+	int count_lines = 0;
 
-	for (; s[i] && (s[i] == ' ' || s[i] == '\t'); i++)
-		;
-	if (s[i] == '\0')
-		return (0);
-	return (1);
-}
-/**
- * main - entry point, evaluates path name.
- * @argc: number of arguments.
- * @argv: array of arguments.
- * Return: EXIT_SUCCESS, EXIT_FAILURE.
- */
-int main(int argc, char **argv)
-{
-	FILE *f;
-	char *s = NULL;
-	size_t n, i;
-	int r;
-	stack_t *stk = NULL;
-	cmds *tmp2;
-
-	if (argc != 2)
+	if (ac != 2)
 	{
-		dprintf(STDERR_FILENO, "USAGE: monty file\n");
+		fprintf(stderr, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-	f = fopen(argv[1], "r");
-	if (!f)
+	global_var.fd = fopen(av[1], "r");
+	if (!global_var.fd)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't open file %s\n", argv[1]);
+		fprintf(stderr, "Error: Can't open file %s\n", av[1]);
 		exit(EXIT_FAILURE);
 	}
-	for (i = 1; (r = getline(&s, &n, f)) != EOF; i++)
+	while (1)
 	{
-		s[r - 1] = '\0';
-		if (!check_blank(s) || m_com(&s) || !(*s))
-			continue;
-		if (!command_builder(&head, s, i))
+		flag_EOF = getline(&global_var.buffer, &state_buffer, global_var.fd);
+		if (flag_EOF == -1)
+			break;
+		count_words = countwords(global_var.buffer);
+		count_lines++;
+		global_var.words = split_line(global_var.buffer, count_words, &head);
+		if (global_var.words[0] != NULL)
 		{
-			dprintf(STDERR_FILENO, "Error: malloc failed\n");
-			freell(&stk);
-			exit(EXIT_FAILURE);
+			get_func(&head, count_lines);
+			free_loop(global_var.words);
 		}
+		else
+			free(global_var.words);
 	}
-	free(s), fclose(f);
-	for (; head; free(tmp2->cmd[1]), free(tmp2->cmd[0]), free(tmp2))
-	{
-		tmp2 = head;
-		execute_ops(&stk);
-		head = head->next;
-	}
-	freell(&stk);
-	return (EXIT_SUCCESS);
+	free(global_var.buffer);
+	free_stack(head);
+	fclose(global_var.fd);
+	return (0);
 }
